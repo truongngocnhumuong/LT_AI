@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+{% block title %}So sánh mô hình{% endblock %}
+
+{% block head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>📊 So sánh hiệu suất 7 mô hình</h1>
+    <p class="subtitle">Số liệu được lưu từ Notebook huấn luyện. Mở lại notebook để cập nhật.</p>
+</div>
+
+{% if not results %}
+<div class="alert alert-warning">
+    ⚠️ Chưa có kết quả huấn luyện. Vui lòng chạy <code>notebooks/01_train_models.ipynb</code> trước.
+</div>
+{% else %}
+
+<div class="card">
+    <h2 class="card-title">📋 Bảng chỉ số (%)</h2>
+    <div class="table-wrap">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Mô hình</th>
+                    <th>Accuracy</th>
+                    <th>Precision</th>
+                    <th>Recall</th>
+                    <th>F1-Score</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for name, r in results.items() %}
+                <tr>
+                    <td><b>{{ name }}</b></td>
+                    <td>{{ "%.2f"|format(r.Accuracy) }}</td>
+                    <td>{{ "%.2f"|format(r.Precision) }}</td>
+                    <td>{{ "%.2f"|format(r.Recall) }}</td>
+                    <td>{{ "%.2f"|format(r["F1-Score"]) }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="grid-2">
+    <div class="card">
+        <h2 class="card-title">📊 Biểu đồ so sánh</h2>
+        <canvas id="chart-bar" height="280"></canvas>
+    </div>
+    <div class="card">
+        <h2 class="card-title">🎯 F1-Score (cao = tốt)</h2>
+        <canvas id="chart-f1" height="280"></canvas>
+    </div>
+</div>
+
+<div class="card">
+    <h2 class="card-title">🧩 Confusion Matrix</h2>
+    <p>Hiển thị TP, FP, FN, TN của từng mô hình (số liệu trên tập test).</p>
+    <div class="cm-grid">
+        {% for name, r in results.items() %}
+            {% if r.cm %}
+            <div class="cm-card">
+                <h4>{{ name }}</h4>
+                <table class="cm-table">
+                    <tr>
+                        <td class="cm-label"></td>
+                        <td class="cm-label">Pred Ham</td>
+                        <td class="cm-label">Pred Spam</td>
+                    </tr>
+                    <tr>
+                        <td class="cm-label">Ham</td>
+                        <td class="cm-tn">{{ r.cm[0][0] }}</td>
+                        <td class="cm-fp">{{ r.cm[0][1] }}</td>
+                    </tr>
+                    <tr>
+                        <td class="cm-label">Spam</td>
+                        <td class="cm-fn">{{ r.cm[1][0] }}</td>
+                        <td class="cm-tp">{{ r.cm[1][1] }}</td>
+                    </tr>
+                </table>
+            </div>
+            {% endif %}
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+const data = {{ results | tojson }};
+const labels = Object.keys(data);
+const COL = {
+    Accuracy: '#378ADD', Precision: '#639922',
+    Recall: '#BA7517',   'F1-Score': '#E24B4A'
+};
+
+new Chart(document.getElementById('chart-bar'), {
+    type: 'bar',
+    data: {
+        labels: labels,
+        datasets: ['Accuracy','Precision','Recall','F1-Score'].map(metric => ({
+            label: metric,
+            data: labels.map(l => data[l][metric]),
+            backgroundColor: COL[metric],
+        }))
+    },
+    options: {
+        responsive: true,
+        scales: { y: { beginAtZero: false, min: 50, max: 100 } },
+        plugins: { legend: { position: 'top' } }
+    }
+});
+
+new Chart(document.getElementById('chart-f1'), {
+    type: 'bar',
+    data: {
+        labels: labels,
+        datasets: [{
+            label: 'F1-Score (%)',
+            data: labels.map(l => data[l]['F1-Score']),
+            backgroundColor: '#E24B4A',
+        }]
+    },
+    options: {
+        indexAxis: 'y',
+        responsive: true,
+        scales: { x: { beginAtZero: false, min: 50, max: 100 } },
+        plugins: { legend: { display: false } }
+    }
+});
+</script>
+
+{% endif %}
+{% endblock %}

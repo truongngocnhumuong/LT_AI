@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block title %}Hướng dẫn{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>ℹ️ Hướng dẫn sử dụng</h1>
+    <p class="subtitle">Tài liệu kèm theo Đồ án bài tập lớn — Học Máy và Ứng Dụng.</p>
+</div>
+
+<div class="card">
+    <h2 class="card-title">🎯 Mục tiêu đồ án</h2>
+    <p>Xây dựng hệ thống phân loại tin nhắn email/SMS thành <b>Spam</b> hoặc <b>Ham</b>
+       (không spam) sử dụng <b>7 mô hình</b> Machine Learning + Deep Learning,
+       so sánh hiệu suất và đóng gói thành ứng dụng web hoàn chỉnh.</p>
+</div>
+
+<div class="card">
+    <h2 class="card-title">🧠 Các mô hình được sử dụng</h2>
+    <table class="data-table">
+        <thead><tr><th>Loại</th><th>Mô hình</th><th>Đặc điểm</th></tr></thead>
+        <tbody>
+            <tr><td>ML</td><td>K-Nearest Neighbors</td><td>Phân loại theo k láng giềng gần nhất</td></tr>
+            <tr><td>ML</td><td>Naive Bayes</td><td>Xác suất theo định lý Bayes, nhanh, hiệu quả với text</td></tr>
+            <tr><td>ML</td><td>Decision Tree</td><td>Cây quyết định, dễ hiểu, dễ giải thích</td></tr>
+            <tr><td>ML</td><td>KMeans (k=2)</td><td>Phân cụm không giám sát, gán nhãn theo majority vote</td></tr>
+            <tr><td>ML</td><td>SVM (LinearSVC)</td><td>Tìm siêu phẳng tối ưu phân tách 2 lớp</td></tr>
+            <tr><td>DL</td><td>LSTM</td><td>Mạng nơ-ron hồi quy, học ngữ cảnh tuần tự</td></tr>
+            <tr><td>DL</td><td>DistilBERT</td><td>Fine-tune Transformer pretrained, hiện đại nhất</td></tr>
+        </tbody>
+    </table>
+</div>
+
+<div class="card">
+    <h2 class="card-title">⚙️ Quy trình hoạt động</h2>
+    <ol>
+        <li><b>Notebook training</b>: <code>notebooks/01_train_models.ipynb</code> đọc <code>data/spam.csv</code>,
+            tiền xử lý, train cả 7 mô hình, đánh giá và <b>lưu các file model</b> vào thư mục <code>models/</code>.</li>
+        <li><b>Flask app</b>: load các model đã lưu, expose REST API <code>/api/predict</code>
+            và 4 trang web giao diện cho người dùng cuối.</li>
+        <li><b>SQLite</b>: lưu lại lịch sử mọi lần dự đoán để tra cứu.</li>
+    </ol>
+</div>
+
+<div class="card">
+    <h2 class="card-title">▶️ Cài đặt và chạy</h2>
+    <pre class="code-block"># 1. Cài thư viện
+pip install -r requirements.txt
+
+# 2. Train mô hình (mở Jupyter và chạy)
+jupyter notebook notebooks/01_train_models.ipynb
+# (Chạy tất cả các cell, mất ~5-15 phút trên CPU,
+#  riêng DistilBERT khuyến khích chạy trên Google Colab có GPU)
+
+# 3. Chạy web
+python run.py
+# Mở http://127.0.0.1:5000 trong trình duyệt</pre>
+</div>
+
+<div class="card">
+    <h2 class="card-title">📁 Cấu trúc thư mục</h2>
+    <pre class="code-block">spam_classifier_v2/
+├── data/
+│   └── spam.csv                  # Dataset
+├── notebooks/
+│   └── 01_train_models.ipynb     # Notebook train 7 mô hình
+├── models/                       # Các file model đã lưu (.pkl, .h5, distilbert/)
+├── app/
+│   ├── app.py                    # Flask factory
+│   ├── routes.py                 # 5 trang web + API
+│   ├── ml_service.py             # Load model + dự đoán
+│   ├── db.py                     # SQLite lưu lịch sử
+│   ├── templates/                # 5 file HTML
+│   └── static/                   # CSS + JS
+├── run.py                        # Entry point
+├── requirements.txt
+└── README.md</pre>
+</div>
+
+<div class="card">
+    <h2 class="card-title">🎓 Thông tin đồ án</h2>
+    <table class="data-table">
+        <tbody>
+            <tr><th>Môn học</th><td>Học Máy và Ứng Dụng</td></tr>
+            <tr><th>Sinh viên</th><td>Trương Ngọc Như Muống</td></tr>
+            <tr><th>MSSV</th><td>4551190036</td></tr>
+            <tr><th>GVHD</th><td>Lê Quang Hùng</td></tr>
+            <tr><th>Trường</th><td>Đại học Quy Nhơn</td></tr>
+        </tbody>
+    </table>
+</div>
+{% endblock %}

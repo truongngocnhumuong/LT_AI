@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+{% block title %}Phân loại tin nhắn{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>🔍 Phân loại tin nhắn Spam / Ham</h1>
+    <p class="subtitle">Nhập nội dung email/SMS, chọn mô hình và xem kết quả phân loại tức thì.</p>
+</div>
+
+<div class="grid-2">
+    <!-- LEFT: Form -->
+    <div class="card">
+        <h2 class="card-title">✍️ Nội dung cần kiểm tra</h2>
+
+        <label class="form-label">Chọn mô hình:</label>
+        <select id="model-select" class="form-control">
+            {% for m in models %}
+                <option value="{{ m }}" {% if m=='SVM' %}selected{% endif %}>{{ m }}</option>
+            {% endfor %}
+        </select>
+
+        <label class="form-label" style="margin-top:14px">Nội dung tin nhắn:</label>
+        <textarea id="input-text" class="form-control" rows="6"
+                  placeholder="Ví dụ: Congratulations! You won a FREE iPhone. Click here to claim!"></textarea>
+
+        <div class="examples">
+            <p class="examples-title">💡 Thử nhanh với ví dụ mẫu:</p>
+            <div class="examples-grid">
+                <button class="example-btn" data-text="WINNER!! As a valued network customer you have been selected to receive a £900 prize reward! To claim call 09061701461.">
+                    📧 Spam — Trúng thưởng
+                </button>
+                <button class="example-btn" data-text="URGENT! Your mobile number has won £2000 Bonus Caller Prize on 09/06/03! This is our 2nd attempt to contact U!">
+                    📧 Spam — Khẩn cấp giả
+                </button>
+                <button class="example-btn" data-text="Hey, are you coming to the study group meeting tomorrow at 3pm? Let me know if you need a ride.">
+                    💬 Ham — Tin nhắn thường
+                </button>
+                <button class="example-btn" data-text="I'm heading home now. Do you want me to pick up some groceries on the way?">
+                    💬 Ham — Hỏi thăm bạn bè
+                </button>
+            </div>
+        </div>
+
+        <button id="btn-predict" class="btn btn-primary btn-block">
+            🚀 Phân loại ngay
+        </button>
+    </div>
+
+    <!-- RIGHT: Result -->
+    <div class="card">
+        <h2 class="card-title">📋 Kết quả phân loại</h2>
+        <div id="result-area">
+            <div class="placeholder">
+                👆 Nhập tin nhắn và nhấn <b>Phân loại ngay</b> để xem kết quả.
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.querySelectorAll(".example-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+            document.getElementById("input-text").value = btn.dataset.text;
+        });
+    });
+
+    document.getElementById("btn-predict").addEventListener("click", async () => {
+        const text = document.getElementById("input-text").value.trim();
+        const model = document.getElementById("model-select").value;
+        const resultArea = document.getElementById("result-area");
+
+        if (!text) {
+            resultArea.innerHTML = '<div class="alert alert-warning">⚠️ Vui lòng nhập nội dung tin nhắn.</div>';
+            return;
+        }
+
+        resultArea.innerHTML = '<div class="loading">⏳ Đang xử lý...</div>';
+
+        try {
+            const res = await fetch("/api/predict", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({text, model})
+            });
+            const data = await res.json();
+            if (data.error) {
+                resultArea.innerHTML = `<div class="alert alert-error">❌ ${data.error}</div>`;
+                return;
+            }
+            renderResult(data);
+        } catch (e) {
+            resultArea.innerHTML = `<div class="alert alert-error">❌ Lỗi: ${e.message}</div>`;
+        }
+    });
+
+    function renderResult(d) {
+        const isSpam = d.label === "spam";
+        const cls = isSpam ? "result-spam" : "result-ham";
+        const icon = isSpam ? "🚫" : "✅";
+        const txt  = isSpam ? "SPAM" : "HAM";
+        const sub  = isSpam ? "Tin nhắn này có khả năng là Spam"
+                            : "Tin nhắn này có vẻ an toàn (Ham)";
+
+        const pctSpam = (d.prob_spam * 100).toFixed(1);
+        const pctHam  = (d.prob_ham * 100).toFixed(1);
+
+        document.getElementById("result-area").innerHTML = `
+            <div class="${cls}">
+                <div class="big-icon">${icon}</div>
+                <div class="big-label">${txt}</div>
+                <div class="big-sub">${sub}</div>
+            </div>
+
+            <p class="bar-title">Mức độ tin cậy:</p>
+
+            <div class="bar-row">
+                <div class="bar-label">🚫 Spam</div>
+                <div class="bar-track"><div class="bar-fill bar-spam" style="width:${pctSpam}%"></div></div>
+                <div class="bar-pct">${pctSpam}%</div>
+            </div>
+            <div class="bar-row">
+                <div class="bar-label">✅ Ham</div>
+                <div class="bar-track"><div class="bar-fill bar-ham" style="width:${pctHam}%"></div></div>
+                <div class="bar-pct">${pctHam}%</div>
+            </div>
+
+            <details class="details-box">
+                <summary>🔬 Xem chi tiết xử lý</summary>
+                <div class="step">📝 <b>Mô hình:</b> ${d.model}</div>
+                <div class="step">🧹 <b>Sau tiền xử lý:</b> ${d.text_clean.substring(0,200)}</div>
+                <div class="step">🎯 <b>Kết quả:</b> ${txt}</div>
+            </details>
+        `;
+    }
+</script>
+{% endblock %}

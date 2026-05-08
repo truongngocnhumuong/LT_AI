@@ -1,0 +1,34 @@
+# ============================================================
+# REQUIREMENTS — Spam Classifier v2
+# ============================================================
+# Cài đặt: pip install -r requirements.txt
+# ============================================================
+
+# --- Core ---
+numpy>=1.24.0
+pandas>=2.0.0
+scikit-learn>=1.3.0
+scipy>=1.10.0
+
+# --- Visualization ---
+matplotlib>=3.7.0
+seaborn>=0.12.0
+
+# --- Web Framework ---
+flask>=3.0.0
+werkzeug>=3.0.0
+
+# --- Deep Learning (CPU - cho LSTM) ---
+tensorflow>=2.15.0
+
+# --- Transformers (cho DistilBERT) ---
+torch>=2.0.0
+transformers>=4.35.0
+
+# --- Utility ---
+joblib>=1.3.0
+nltk>=3.8.0
+
+# --- Jupyter (để mở notebook) ---
+jupyter>=1.0.0
+ipykernel>=6.25.0

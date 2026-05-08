@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block title %}Phân loại hàng loạt{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>📂 Phân loại hàng loạt từ file CSV</h1>
+    <p class="subtitle">Upload file CSV chứa cột text/v2/message → hệ thống sẽ phân loại từng dòng.</p>
+</div>
+
+<div class="card">
+    <h2 class="card-title">⬆️ Upload CSV</h2>
+    <form action="{{ url_for('main.batch') }}" method="POST" enctype="multipart/form-data">
+        <div class="grid-2">
+            <div>
+                <label class="form-label">Mô hình:</label>
+                <select name="model" class="form-control">
+                    {% for m in models %}
+                        <option value="{{ m }}" {% if m=='SVM' %}selected{% endif %}>{{ m }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label class="form-label">Tên cột chứa text (tùy chọn):</label>
+                <input name="text_column" class="form-control"
+                       placeholder="text / v2 / message" value="text">
+            </div>
+        </div>
+        <label class="form-label" style="margin-top:14px">File CSV:</label>
+        <input type="file" name="file" accept=".csv" class="form-control" required>
+        <button type="submit" class="btn btn-primary btn-block" style="margin-top:14px">
+            🚀 Phân loại
+        </button>
+        <p class="help-text">Tối đa 1.000 dòng/lần. File quá lớn sẽ bị cắt.</p>
+    </form>
+</div>
+
+{% if results %}
+<div class="card">
+    <h2 class="card-title">📊 Kết quả ({{ total }} tin nhắn — mô hình: {{ selected_model }})</h2>
+    <div class="stat-row">
+        <div class="stat-box stat-spam">
+            <div class="stat-num">{{ n_spam }}</div>
+            <div class="stat-lbl">🚫 Spam</div>
+        </div>
+        <div class="stat-box stat-ham">
+            <div class="stat-num">{{ n_ham }}</div>
+            <div class="stat-lbl">✅ Ham</div>
+        </div>
+        <div class="stat-box stat-total">
+            <div class="stat-num">{{ total }}</div>
+            <div class="stat-lbl">Tổng</div>
+        </div>
+        <div class="stat-box stat-rate">
+            <div class="stat-num">{{ "%.1f"|format(n_spam/total*100 if total else 0) }}%</div>
+            <div class="stat-lbl">Tỉ lệ Spam</div>
+        </div>
+    </div>
+
+    <div class="table-wrap" style="margin-top:18px">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Tin nhắn (tóm tắt)</th>
+                    <th>Nhãn</th>
+                    <th>Xác suất Spam</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in results %}
+                <tr class="{% if r.label=='spam' %}row-spam{% elif r.label=='ham' %}row-ham{% else %}row-err{% endif %}">
+                    <td>{{ loop.index }}</td>
+                    <td>{{ r.text }}</td>
+                    <td>
+                        {% if r.label=='spam' %}
+                            <span class="badge badge-spam">🚫 SPAM</span>
+                        {% elif r.label=='ham' %}
+                            <span class="badge badge-ham">✅ HAM</span>
+                        {% else %}
+                            <span class="badge badge-err">⚠️ ERROR</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ "%.1f"|format(r.prob_spam*100) }}%</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

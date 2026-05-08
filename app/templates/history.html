@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% block title %}Lịch sử dự đoán{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>🕒 Lịch sử dự đoán</h1>
+    <p class="subtitle">Tổng cộng <b>{{ stats.total }}</b> bản ghi
+        — Spam: <b>{{ stats.spam }}</b> · Ham: <b>{{ stats.ham }}</b></p>
+</div>
+
+<div class="grid-2">
+    <div class="card">
+        <h2 class="card-title">📈 Theo mô hình</h2>
+        {% if stats.by_model %}
+        <table class="data-table">
+            <thead><tr><th>Mô hình</th><th>Số lần dự đoán</th></tr></thead>
+            <tbody>
+            {% for r in stats.by_model %}
+                <tr><td>{{ r.model }}</td><td>{{ r.cnt }}</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+            <p class="placeholder">Chưa có dữ liệu.</p>
+        {% endif %}
+    </div>
+
+    <div class="card">
+        <h2 class="card-title">⚙️ Bộ lọc & Hành động</h2>
+        <form method="GET" action="{{ url_for('main.history') }}">
+            <div class="grid-2">
+                <div>
+                    <label class="form-label">Nhãn:</label>
+                    <select name="label" class="form-control">
+                        <option value="all"  {% if label_filter=='all' %}selected{% endif %}>-- Tất cả --</option>
+                        <option value="spam" {% if label_filter=='spam' %}selected{% endif %}>Spam</option>
+                        <option value="ham"  {% if label_filter=='ham' %}selected{% endif %}>Ham</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="form-label">Mô hình:</label>
+                    <select name="model" class="form-control">
+                        <option value="all" {% if model_filter=='all' %}selected{% endif %}>-- Tất cả --</option>
+                        {% for m in models %}
+                            <option value="{{ m }}" {% if model_filter==m %}selected{% endif %}>{{ m }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block" style="margin-top:12px">
+                🔍 Lọc
+            </button>
+        </form>
+
+        <form method="POST" action="{{ url_for('main.history_clear') }}"
+              style="margin-top:12px"
+              onsubmit="return confirm('Xoá toàn bộ lịch sử?');">
+            <button type="submit" class="btn btn-danger btn-block">
+                🗑️ Xoá toàn bộ lịch sử
+            </button>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <h2 class="card-title">📜 Bản ghi gần đây ({{ rows|length }})</h2>
+    {% if rows %}
+    <div class="table-wrap">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Thời gian</th>
+                    <th>Mô hình</th>
+                    <th>Tin nhắn</th>
+                    <th>Nhãn</th>
+                    <th>Tin cậy</th>
+                    <th>Nguồn</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for r in rows %}
+                <tr class="{% if r.label=='spam' %}row-spam{% else %}row-ham{% endif %}">
+                    <td>{{ r.id }}</td>
+                    <td>{{ r.timestamp }}</td>
+                    <td>{{ r.model }}</td>
+                    <td>{{ r.text[:120] }}{% if r.text|length>120 %}…{% endif %}</td>
+                    <td>
+                        {% if r.label=='spam' %}
+                            <span class="badge badge-spam">🚫 SPAM</span>
+                        {% else %}
+                            <span class="badge badge-ham">✅ HAM</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ "%.1f"|format((r.confidence or 0)*100) }}%</td>
+                    <td>{{ r.source }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+        <p class="placeholder">Chưa có dữ liệu lịch sử.</p>
+    {% endif %}
+</div>
+{% endblock %}

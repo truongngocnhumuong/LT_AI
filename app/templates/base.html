@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Spam Classifier{% endblock %} — ĐH Quy Nhơn</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    {% block head %}{% endblock %}
+</head>
+<body>
+    <header class="navbar">
+        <div class="container">
+            <a href="{{ url_for('main.index') }}" class="brand">
+                <span class="brand-icon">🛡️</span>
+                <span class="brand-text">Spam Classifier</span>
+            </a>
+            <nav class="nav-links">
+                <a href="{{ url_for('main.index') }}"
+                   class="{{ 'active' if active_page=='index' else '' }}">
+                    🔍 Phân loại
+                </a>
+                <a href="{{ url_for('main.compare') }}"
+                   class="{{ 'active' if active_page=='compare' else '' }}">
+                    📊 So sánh
+                </a>
+                <a href="{{ url_for('main.batch') }}"
+                   class="{{ 'active' if active_page=='batch' else '' }}">
+                    📂 Hàng loạt
+                </a>
+                <a href="{{ url_for('main.history') }}"
+                   class="{{ 'active' if active_page=='history' else '' }}">
+                    🕒 Lịch sử
+                </a>
+                <a href="{{ url_for('main.about') }}"
+                   class="{{ 'active' if active_page=='about' else '' }}">
+                    ℹ️ Hướng dẫn
+                </a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container main-content">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, msg in messages %}
+              <div class="flash flash-{{ category }}">{{ msg }}</div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>
+                Đồ án Học Máy và Ứng Dụng — ĐH Quy Nhơn
+                · 7 mô hình: KNN · Naive Bayes · Decision Tree · KMeans · SVM · LSTM · DistilBERT
+            </p>
+        </div>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>
