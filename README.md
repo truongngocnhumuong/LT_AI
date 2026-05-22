@@ -1,5 +1,4 @@
-# 🛡️ Spam Classifier — Đồ án Học Máy và Ứng Dụng
-
+# Học phần trí tuệ nhân tạo 
 Hệ thống phân loại tin nhắn email/SMS thành **Spam** / **Ham** với **7 mô hình**:
 **KNN · Naive Bayes · Decision Tree · KMeans · SVM · LSTM · DistilBERT**
 
