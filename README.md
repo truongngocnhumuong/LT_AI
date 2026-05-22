@@ -7,16 +7,6 @@ Hệ thống phân loại tin nhắn email/SMS thành **Spam** / **Ham** với *
 
 ---
 
-## 👤 Thông tin
-
-| Mục | Nội dung |
-|---|---|
-| Môn học | Học Máy và Ứng Dụng |
-| Sinh viên | Trương Ngọc Như Muống |
-| MSSV | 4551190036 |
-| GVHD | Lê Quang Hùng |
-| Trường | Đại học Quy Nhơn |
-
 ---
 
 ## 📁 Cấu trúc thư mục
